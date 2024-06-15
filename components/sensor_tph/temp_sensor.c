@@ -45,6 +45,7 @@ float RTC_DATA_ATTR humidity;
 
 // Espacio de memoria para alojar la propiedad "unsigned char* temp_string;" del objeto.
 char temp_string[10];
+char hum_string[10];
 
 /************************************************************************/
 /* Convierte la temperatura almacenada en float, a cadena de caracteres */
@@ -66,6 +67,7 @@ static void convert_temp_to_string(void)
     }
     // Convierta a cadena de texto con formato de 4 digitos, 1 posicion decimal.
     snprintf((char *)temp_string, sizeof(temp_string), "%04.1f", temp);
+    snprintf((char *)hum_string, sizeof(hum_string), "%04.1f", humidity);
 }
 
 /************************************************************************/
@@ -190,6 +192,8 @@ static void publish_to_mqtt(void)
     strcat(bufferJson, mqtt_deviceId + strlen(mqtt_deviceId) - 3); // " + strlen(mqtt_deviceId) - 3", como trabajo con punteros, equivale a string.right(3)
     strcat(bufferJson, ", \"temperatura\": ");
     strcat(bufferJson, temp_string);
+    strcat(bufferJson, ", \"humedad\": ");
+    strcat(bufferJson, hum_string);
     strcat(bufferJson, ", \"rssi\": ");
     strcat(bufferJson, buffer_rssi_txt);
     strcat(bufferJson, " }");
