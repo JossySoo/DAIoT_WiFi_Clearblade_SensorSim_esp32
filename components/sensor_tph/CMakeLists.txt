@@ -12,4 +12,5 @@ idf_component_register(SRCS
                                         esp_netif
                                         esp_hw_support
                                         mqtt
+                                        dht
                                                         )

@@ -19,8 +19,11 @@
 #include <string.h>
 
 #include "temp_sensor.h"
+#include "dht.h"
+#include "driver/gpio.h"
 
 #define SENSOR_LOG_TAG "SENSOR_SIM"
+#define DHT_PIN GPIO_NUM_22
 
 /************************************************************************/
 /* Simula sensor de temperatura                                         */
@@ -38,6 +41,7 @@ static uint32_t RTC_DATA_ATTR restart_counter = 0;
 
 // Espacio de memoria para alojar la propiedad "float *temp;" del objeto.
 float RTC_DATA_ATTR temp;
+float RTC_DATA_ATTR humidity;
 
 // Espacio de memoria para alojar la propiedad "unsigned char* temp_string;" del objeto.
 char temp_string[10];
@@ -76,17 +80,21 @@ static void sample_temp(void)
 
     // Tomo la muestra del supuesto sensor, en este ejemplo solo genero un random.
     ESP_LOGI(SENSOR_LOG_TAG, "Tomando muestra... ");
-    uint32_t random_number = esp_random();
-    if (random_number > 2147483648)
-        temp += 0.3;
-    else
-        temp -= 0.3;
-
-    if (temp > 40)
-        temp = 39.5;
-    if (temp < 1)
-        temp = 1.5;
-    convert_temp_to_string();
+    // Leer datos del DHT11
+    int16_t temperature = 0;
+    int16_t hum = 0;
+    esp_err_t result = dht_read_data(DHT_TYPE_DHT11, DHT_PIN, &hum, &temperature);
+    
+    if (result == ESP_OK) {
+        // Convertir la temperatura y humedad a formato float y asignarlas
+        temp = (float)temperature / 10.0;
+        humidity = (float)hum / 10.0;
+        ESP_LOGI(SENSOR_LOG_TAG, "Temperatura: %.1f°C, Humedad: %.1f%%", temp, humidity);
+        // Convertir la temperatura y la humedad a cadena de texto
+        convert_temp_to_string();
+    } else {
+        ESP_LOGE(SENSOR_LOG_TAG, "No se pudo leer el sensor DHT11: %d", result);
+    }
 }
 
 /************************************************************************/
